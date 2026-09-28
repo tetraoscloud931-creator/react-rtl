@@ -1,11 +1,12 @@
 # @tetraoscloud931-creator/react-rtl
 
-Arabic-first RTL primitives for React: locale context, direction hooks, and memoized `Intl` formatters.
+Arabic-first RTL primitives for React: locale context, direction hooks, logical styles, and memoized `Intl` formatters.
 
 Most RTL libraries stop at `dir="rtl"`. This one treats the locale as state — a single provider owns it, direction is derived from it, and every consumer reads from the same source instead of re-deriving `ar` → `rtl` in a dozen files.
 
 - **One source of truth** — a `LocaleProvider` owns the locale; `dir` follows unless you override it
 - **No duplicated script logic** — `detectDirection` uses `Intl.Locale#maximize`, so `az-Arab` is RTL and `ar-Latn` is LTR
+- **Write `marginStart`, not `marginLeft`** — `toLogicalStyles` maps start/end shorthands onto the inline properties so one style object works in both directions
 - **Memoized formatters** — `Intl.NumberFormat` is a surprisingly expensive constructor; these are built once per locale
 - **SSR-safe** — no `document` access at import time
 - **Zero runtime dependencies** — React is a peer
@@ -69,6 +70,61 @@ export function App() {
 | `resolveLocale({ lang, dir })` | explicit `dir` wins, else derive from `lang` |
 | `readDocumentLocale()` | SSR-safe read of `<html lang dir>` |
 | `cx(...)` | class joiner: strings, arrays, `{ on: boolean }` |
+| `toLogicalStyles(styles)` | maps `marginStart` / `paddingEnd` / `insetStart` / `borderStart*` onto the inline properties |
+| `mirrorInRTL(style, dir)` | adds `scaleX(-1)` in RTL — for arrows, chevrons, back arrows |
+| `flipTranslate(value, dir)` | negates a pixel offset in RTL |
+| `translateForDirection(value, dir)` | that offset as a `translateX()` string |
+
+## Logical styles
+
+### `toLogicalStyles`
+
+The shorthand pair you'd otherwise be tempted to get wrong:
+
+```tsx
+import { toLogicalStyles } from '@tetraoscloud931-creator/react-rtl';
+
+const style = toLogicalStyles({
+  marginStart: 16,      // → marginInlineStart
+  marginEnd: 8,         // → marginInlineEnd
+  paddingStart: '1rem', // → paddingInlineStart
+  insetEnd: 'auto',     // → insetInlineEnd
+  color: 'red',         // passed through untouched
+});
+
+// { marginInlineStart: 16, marginInlineEnd: 8,
+//   paddingInlineStart: '1rem', insetInlineEnd: 'auto', color: 'red' }
+```
+
+Also covers `insetStart` / `insetEnd`, `borderStartWidth` / `borderEndWidth`, `borderStartColor` / `borderEndColor`, and `borderStartStyle` / `borderEndStyle`.
+
+Ordinary properties pass straight through, and `undefined` values are dropped so spreading the result can't clear a style an ancestor set.
+
+### `useMirror`
+
+Icons that point somewhere have to point the other way in RTL. `useMirror` is bound to the provider's direction:
+
+```tsx
+import { useMirror } from '@tetraoscloud931-creator/react-rtl';
+
+function BackIcon() {
+  const mirror = useMirror();
+  return <svg style={mirror({ transform: 'rotate(0deg)' })} d="M15 18l-6-6 6-6" />;
+}
+```
+
+In `ar` that renders `rotate(0deg) scaleX(-1)`; in `en` the style comes back untouched.
+
+### `flipTranslate` / `translateForDirection`
+
+For animations that should move toward the reading direction:
+
+```tsx
+import { translateForDirection } from '@tetraoscloud931-creator/react-rtl';
+
+const style = { transform: translateForDirection(12, direction) };
+// ar → translateX(-12px)   en → translateX(12px)
+```
 
 ## Behaviour worth knowing
 
