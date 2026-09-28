@@ -1,0 +1,62 @@
+{
+  "name": "@tetraoscloud931-creator/react-rtl",
+  "version": "0.1.0",
+  "description": "Arabic-first RTL primitives for React: locale context, direction hooks, and memoized Intl formatters.",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist-cjs/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist-cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "dist-cjs",
+    "README.md",
+    "LICENSE"
+  ],
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com",
+    "access": "public"
+  },
+  "scripts": {
+    "build": "npm run build:esm && npm run build:cjs && node scripts/postbuild.mjs",
+    "build:esm": "tsc -p tsconfig.json",
+    "build:cjs": "tsc -p tsconfig.cjs.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "verify": "npm run typecheck && npm run test && npm run build"
+  },
+  "keywords": [
+    "react",
+    "rtl",
+    "arabic",
+    "i18n",
+    "direction",
+    "bidi",
+    "intl",
+    "hooks"
+  ],
+  "peerDependencies": {
+    "react": ">=18"
+  },
+  "devDependencies": {
+    "@testing-library/dom": "^10.4.0",
+    "@testing-library/react": "^16.1.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "jsdom": "^25.0.1",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8"
+  }
+}
